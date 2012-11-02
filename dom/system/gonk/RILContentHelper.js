@@ -478,7 +478,7 @@ RILContentHelper.prototype = {
 
   registerCallback: function registerCallback(subscriptionId, callbackType, callback) {
     if (callbackType == "_telephonyCallbacks") {
-      let mgr = this._callbackManagerBySim[subscriptionId]
+      let mgr = this._callbackManagerBySim[subscriptionId];
       if (!mgr) {
         // No callback manager for this SIM.
         mgr = this._callbackManagerBySim[subscriptionId] = [];

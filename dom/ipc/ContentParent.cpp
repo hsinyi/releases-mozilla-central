@@ -31,6 +31,7 @@
 #include "mozilla/dom/devicestorage/DeviceStorageRequestParent.h"
 #include "SmsParent.h"
 #include "mozilla/Hal.h"
+#include "VoicemailParent.h"
 #include "mozilla/hal_sandbox/PHalParent.h"
 #include "mozilla/ipc/TestShellParent.h"
 #include "mozilla/layers/CompositorParent.h"
@@ -124,6 +125,7 @@ using base::KillProcess;
 using namespace mozilla::dom::bluetooth;
 using namespace mozilla::dom::devicestorage;
 using namespace mozilla::dom::sms;
+using namespace mozilla::dom::telephony;
 using namespace mozilla::dom::indexedDB;
 using namespace mozilla::hal;
 using namespace mozilla::ipc;
@@ -1823,6 +1825,23 @@ bool
 ContentParent::DeallocPSms(PSmsParent* aSms)
 {
     static_cast<SmsParent*>(aSms)->Release();
+    return true;
+}
+
+PVoicemailParent*
+ContentParent::AllocPVoicemail()
+{
+    if (!AssertAppProcessPermission(this, "voicemail")) {
+        return nullptr;
+    }
+
+    return new VoicemailParent();
+}
+
+bool
+ContentParent::DeallocPVoicemail(PVoicemailParent* aActor)
+{
+    delete aActor;
     return true;
 }
 

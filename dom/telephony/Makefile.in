@@ -5,7 +5,11 @@
 DEPTH            = @DEPTH@
 topsrcdir        = @top_srcdir@
 srcdir           = @srcdir@
-VPATH            = @srcdir@
+VPATH            = \
+  $(srcdir) \
+  $(srcdir)/ipc \
+  $(srcdir)/ril \
+  $(NULL)
 
 include $(DEPTH)/config/autoconf.mk
 
@@ -18,12 +22,27 @@ FAIL_ON_WARNINGS := 1
 
 include $(topsrcdir)/dom/dom-config.mk
 
+EXPORTS_NAMESPACES = \
+  mozilla/dom/telephony \
+  $(NULL)
+
+EXPORTS_mozilla/dom/telephony = \
+  VoicemailChild.h \
+  VoicemailParent.h \
+  VoicemailServicesFactory.h \
+  $(NULL)
+
 CPPSRCS = \
   Telephony.cpp \
   TelephonyCall.cpp \
   CallEvent.cpp \
   Voicemail.cpp \
   VoicemailEvent.cpp \
+  VoicemailChild.cpp \
+  VoicemailParent.cpp \
+  VoicemailServicesFactory.cpp \
+  VoicemailService.cpp \
+  VoicemailIPCService.cpp \
   $(NULL)
 
 XPIDLSRCS = \
@@ -34,12 +53,16 @@ XPIDLSRCS = \
   nsIDOMVoicemail.idl \
   nsIDOMVoicemailEvent.idl \
   nsIDOMVoicemailStatus.idl \
+  nsIVoicemailService.idl \
   $(NULL)
 
-include $(topsrcdir)/config/rules.mk
-
+LOCAL_INCLUDES += $(VPATH:%=-I%)
 XPIDL_FLAGS += \
   -I$(topsrcdir)/dom/base \
   -I$(topsrcdir)/dom/interfaces/base \
   -I$(topsrcdir)/dom/interfaces/events \
   $(NULL)
+
+include $(topsrcdir)/config/config.mk
+include $(topsrcdir)/ipc/chromium/chromium-config.mk
+include $(topsrcdir)/config/rules.mk

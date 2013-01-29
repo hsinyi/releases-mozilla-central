@@ -28,6 +28,7 @@ IPDLDIRS =  \
   dom/bluetooth/ipc \
   dom/plugins/ipc  \
   dom/ipc \
+  dom/telephony/ipc \
   dom/sms/src/ipc \
   dom/src/storage \
   dom/network/src \

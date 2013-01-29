@@ -15,6 +15,10 @@
 
 #include "VoicemailEvent.h"
 
+#include "nsIVoicemailService.h"
+
+#include <android/log.h>
+#define LOG(args...)  __android_log_print(ANDROID_LOG_INFO, "voicemail", args);
 DOMCI_DATA(MozVoicemail, mozilla::dom::telephony::Voicemail)
 
 USING_TELEPHONY_NAMESPACE
@@ -81,6 +85,15 @@ Voicemail::GetNumber(nsAString& aNumber)
   NS_ENSURE_STATE(mRIL);
   aNumber.SetIsVoid(true);
 
+  nsCOMPtr<nsIVoicemailService> service =
+    do_GetService(VOICEMAIL_SERVICE_CONTRACTID);
+  
+  int32_t result = 0;
+  int32_t id = 4;
+  service->TestRegister(id, &result);
+  if (result) {
+    LOG("XXX id=%d, result=%d\n", id, result);
+  }
   return mRIL->GetVoicemailNumber(aNumber);
 }
 

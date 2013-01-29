@@ -375,4 +375,7 @@ interface nsIRadioInterfaceLayer : nsISupports
    */
   void getICCContacts(in DOMString contactType,
                       in nsIRILContactCallback callback);
+
+  // Voicemail ipdl test
+  long testRegister(in long id);
 };

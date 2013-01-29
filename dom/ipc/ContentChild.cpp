@@ -95,6 +95,7 @@
 
 #include "mozilla/dom/indexedDB/PIndexedDBChild.h"
 #include "mozilla/dom/sms/SmsChild.h"
+#include "mozilla/dom/telephony/VoicemailChild.h"
 #include "mozilla/dom/devicestorage/DeviceStorageRequestChild.h"
 #include "mozilla/dom/bluetooth/PBluetoothChild.h"
 
@@ -117,6 +118,7 @@ using namespace mozilla::dom::bluetooth;
 using namespace mozilla::dom::devicestorage;
 using namespace mozilla::dom::ipc;
 using namespace mozilla::dom::sms;
+using namespace mozilla::dom::telephony;
 using namespace mozilla::dom::indexedDB;
 using namespace mozilla::hal_sandbox;
 using namespace mozilla::ipc;
@@ -844,6 +846,19 @@ bool
 ContentChild::DeallocPSms(PSmsChild* aSms)
 {
     delete aSms;
+    return true;
+}
+
+PVoicemailChild*
+ContentChild::AllocPVoicemail()
+{
+    return new VoicemailChild();
+}
+
+bool
+ContentChild::DeallocPVoicemail(PVoicemailChild* aVoicemail)
+{
+    delete aVoicemail;
     return true;
 }
 

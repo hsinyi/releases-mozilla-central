@@ -260,6 +260,9 @@ private:
     virtual PSmsParent* AllocPSms();
     virtual bool DeallocPSms(PSmsParent*);
 
+    virtual PVoicemailParent* AllocPVoicemail();
+    virtual bool DeallocPVoicemail(PVoicemailParent*);
+
     virtual PStorageParent* AllocPStorage(const StorageConstructData& aData);
     virtual bool DeallocPStorage(PStorageParent* aActor);
 

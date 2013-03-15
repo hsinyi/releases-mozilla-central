@@ -661,6 +661,16 @@ RadioInterfaceLayer.prototype = {
     return aId+1;
   },
 
+  get voicemailNumber() {
+    debug("XXX voicemailNumber: " + this.voicemailInfo.number + " name: " + this.voicemailInfo.displayName);
+    return this.voicemailInfo.number;
+  },
+
+  get voicemailDisplayName() {
+    debug("XXX voicemailDisplayName: " + this.voicemailInfo.displayName);
+    return this.voicemailInfo.displayName;
+  },
+
   _messageManagerByRequest: null,
   saveRequestTarget: function saveRequestTarget(msg) {
     let requestId = msg.json.requestId;
@@ -1264,16 +1274,6 @@ RadioInterfaceLayer.prototype = {
         .initWithCallback(this._cancelCallRingWakeLockTimer.bind(this),
                           CALL_WAKELOCK_TIMEOUT, Ci.nsITimer.TYPE_ONE_SHOT);
 
-    gSystemMessenger.broadcastMessage("telephony-new-call", {});
-  },
-
-  /**
-   * Handle an incoming call.
-   *
-   * Not much is known about this call at this point, but it's enough
-   * to start bringing up the Phone app already.
-   */
-  handleCallRing: function handleCallRing() {
     gSystemMessenger.broadcastMessage("telephony-new-call", {});
   },
 

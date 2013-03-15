@@ -4,6 +4,7 @@
 
 #include "nsISupports.idl"
 
+interface nsIDOMMozVoicemailStatus;
 %{C++
 #define VOICEMAIL_SERVICE_CID { 0x0e0259cb, 0x89ae, 0x43a8, { 0x95, 0x96, 0x63, 0x1a, 0x60, 0xea, 0x87, 0x62 } } 
 #define VOICEMAIL_SERVICE_CONTRACTID "@mozilla.org/voicemail/voicemailservice;1"
@@ -13,4 +14,6 @@
 interface nsIVoicemailService : nsISupports
 {
   long testRegister(in long id);
+  readonly attribute DOMString number;
+  readonly attribute DOMString displayName;
 };

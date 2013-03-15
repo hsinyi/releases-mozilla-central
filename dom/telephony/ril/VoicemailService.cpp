@@ -3,6 +3,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include "nsIDOMVoicemailStatus.h"
 
 #include "VoicemailService.h"
 #include "SystemWorkerManager.h"
@@ -37,6 +38,29 @@ VoicemailService::TestRegister(int32_t aId, int32_t* aReturnedId)
   return NS_OK;
 }
 
+NS_IMETHODIMP
+VoicemailService::GetNumber(nsAString& aNumber)
+{
+  if (!mRIL) {
+    return NS_OK;
+  }
+
+  aNumber.SetIsVoid(true);
+
+  return mRIL->GetVoicemailNumber(aNumber);
+}
+
+NS_IMETHODIMP
+VoicemailService::GetDisplayName(nsAString& aDisplayName)
+{
+  if (!mRIL) {
+    return NS_OK;
+  }
+
+  aDisplayName.SetIsVoid(true);
+
+  return mRIL->GetVoicemailDisplayName(aDisplayName);
+}
 } // namespace telephony
 } // namespace dom
 } // namespace mozilla

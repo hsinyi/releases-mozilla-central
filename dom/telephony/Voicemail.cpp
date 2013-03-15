@@ -87,14 +87,8 @@ Voicemail::GetNumber(nsAString& aNumber)
 
   nsCOMPtr<nsIVoicemailService> service =
     do_GetService(VOICEMAIL_SERVICE_CONTRACTID);
-  
-  int32_t result = 0;
-  int32_t id = 4;
-  service->TestRegister(id, &result);
-  if (result) {
-    LOG("XXX id=%d, result=%d\n", id, result);
-  }
-  return mRIL->GetVoicemailNumber(aNumber);
+  service->GetNumber(aNumber);
+  return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -103,7 +97,10 @@ Voicemail::GetDisplayName(nsAString& aDisplayName)
   NS_ENSURE_STATE(mRIL);
   aDisplayName.SetIsVoid(true);
 
-  return mRIL->GetVoicemailDisplayName(aDisplayName);
+  nsCOMPtr<nsIVoicemailService> service =
+    do_GetService(VOICEMAIL_SERVICE_CONTRACTID);
+  service->GetDisplayName(aDisplayName);
+  return NS_OK;
 }
 
 NS_IMPL_EVENT_HANDLER(Voicemail, statuschanged)

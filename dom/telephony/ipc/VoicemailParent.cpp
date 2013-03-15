@@ -7,6 +7,9 @@
 #include "nsIVoicemailService.h"
 #include "mozilla/Services.h"
 #include "mozilla/unused.h"
+#include <android/log.h>
+#define LOG(args...)  __android_log_print(ANDROID_LOG_INFO, "voicemailIParent", args);
+
 
 namespace mozilla {
 namespace dom {
@@ -36,6 +39,32 @@ VoicemailParent::RecvTestRegister(const int32_t& aId,
   NS_ENSURE_TRUE(voicemailService, true);
 
   voicemailService->TestRegister(aId, aReturnId);
+  return true;
+}
+
+bool
+VoicemailParent::RecvGetNumber(nsString* aNumber)
+{
+  nsCOMPtr<nsIVoicemailService> voicemailService =
+    do_GetService(VOICEMAIL_SERVICE_CONTRACTID);
+  NS_ENSURE_TRUE(voicemailService, true);
+
+  nsString number;
+  voicemailService->GetNumber(number);
+  *aNumber = number;
+  return true;
+}
+
+bool
+VoicemailParent::RecvGetDisplayName(nsString* aDisplayName)
+{
+  nsCOMPtr<nsIVoicemailService> voicemailService =
+    do_GetService(VOICEMAIL_SERVICE_CONTRACTID);
+  NS_ENSURE_TRUE(voicemailService, true);
+
+  nsString displayName;
+  voicemailService->GetDisplayName(displayName);
+  *aDisplayName = displayName;
   return true;
 }
 

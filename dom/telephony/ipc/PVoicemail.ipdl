@@ -22,6 +22,10 @@ parent:
 
   sync TestRegister(int32_t aId)
       returns (int32_t aReturnId);
+  sync GetNumber()
+      returns (nsString aNumber);
+  sync GetDisplayName()
+      returns (nsString aDisplayName);
 };
 
 } // namespace telephony

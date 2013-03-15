@@ -378,4 +378,6 @@ interface nsIRadioInterfaceLayer : nsISupports
 
   // Voicemail ipdl test
   long testRegister(in long id);
+  readonly attribute DOMString voicemailNumber;
+  readonly attribute DOMString voicemailDisplayName;
 };

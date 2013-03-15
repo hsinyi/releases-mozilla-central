@@ -31,6 +31,12 @@ protected:
   virtual bool
   RecvTestRegister(const int32_t& aId, int32_t* aReturnId) MOZ_OVERRIDE;
 
+  virtual bool
+    RecvGetNumber(nsString* aNumber) MOZ_OVERRIDE;
+
+  virtual bool
+    RecvGetDisplayName(nsString* aDisplayName) MOZ_OVERRIDE;
+
   VoicemailParent();
   virtual ~VoicemailParent();
 

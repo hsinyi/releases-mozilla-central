@@ -1,0 +1,22 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#include "nsISupports.idl"
+
+interface nsIDOMMozVoicemailStatus;
+
+%{C++
+#define VOICEMAIL_STATUS_SERVICE_CID { 0x2dd5ce91, 0x617d, 0x4d47, { 0x84, 0x80, 0xbb, 0x12, 0xc4, 0xcb, 0x7e, 0x31 } }
+#define VOICEMAIL_STATUS_SERVICE_CONTRACTID "@mozilla.org/voicemail/voicemailstatusservice;1"
+%}
+
+[scriptable, builtinclass, uuid(4724f863-f62a-4e18-a767-acd5816587a5)]
+interface nsIVoicemailStatusService : nsISupports
+{
+  [implicit_jscontext]
+  nsIDOMMozVoicemailStatus createStatus(in bool hasMessages,
+                                        in long messageCount,
+                                        in DOMString returnNumber,
+                                        in DOMString returnMessage);
+};

@@ -304,6 +304,10 @@ private:
     virtual PStorageParent* AllocPStorage();
     virtual bool DeallocPStorage(PStorageParent* aActor);
 
+    virtual PVoicemailParent* AllocPVoicemail();
+    virtual bool DeallocPVoicemail(PVoicemailParent*);
+    virtual bool RecvPVoicemailConstructor(PVoicemailParent* aActor);
+
     virtual PBluetoothParent* AllocPBluetooth();
     virtual bool DeallocPBluetooth(PBluetoothParent* aActor);
     virtual bool RecvPBluetoothConstructor(PBluetoothParent* aActor);

@@ -6,7 +6,12 @@
 
 interface nsIDOMMozVoicemailStatus;
 
-[scriptable, uuid(214b0963-da48-4859-a56c-f065a90e0403)]
+%{C++
+#define VOICEMAIL_SERVICE_CID { 0x091589e8, 0x7551, 0x48ee, { 0xb9, 0xc2, 0xe2, 0x3e, 0x0b, 0x51, 0xe8, 0x4c } }
+#define VOICEMAIL_SERVICE_CONTRACTID "@mozilla.org/voicemail/service;1"
+%} 
+
+[scriptable, uuid(afd22f7b-9980-4fbc-bd51-cbd8888fec22)]
 interface nsIVoicemailListener : nsISupports
 {
   /**
@@ -22,7 +27,7 @@ interface nsIVoicemailListener : nsISupports
  * XPCOM component (in the content process) that provides the voicemail
  * information.
  */
-[scriptable, uuid(37bc0991-21a3-4de9-b888-d667fea6c05d)]
+[scriptable, uuid(22d41e2a-dab2-40f6-ac0c-33cd0f15e1e1)]
 interface nsIVoicemailProvider : nsISupports
 {
   /**
@@ -30,10 +35,8 @@ interface nsIVoicemailProvider : nsISupports
    * RadioInterfaceLayer in the chrome process. Only a content process that has
    * the 'voicemail' permission is allowed to register.
    */
-  void registerVoicemailMsg(in nsIVoicemailListener listener);
-  void unregisterVoicemailMsg(in nsIVoicemailListener listener);
-
-  readonly attribute nsIDOMMozVoicemailStatus voicemailStatus;
-  readonly attribute DOMString voicemailNumber;
-  readonly attribute DOMString voicemailDisplayName;
+  void register(in nsIVoicemailListener listener);
+  void unregister(in nsIVoicemailListener listener);
+  readonly attribute DOMString number;
+  readonly attribute DOMString displayName;
 };

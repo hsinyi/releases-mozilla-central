@@ -231,6 +231,10 @@ static void Shutdown();
 #include "nsIAlarmHalService.h"
 #include "nsIMediaManager.h"
 #include "nsMixedContentBlocker.h"
+#include "nsIVoicemailProvider.h"
+#include "mozilla/dom/voicemail/VoicemailServiceFactory.h"
+#include "mozilla/dom/voicemail/VoicemailStatusService.h"
+
 
 #include "AudioChannelService.h"
 
@@ -246,6 +250,7 @@ static void Shutdown();
 using namespace mozilla;
 using namespace mozilla::dom;
 using namespace mozilla::dom::mobilemessage;
+using namespace mozilla::dom::voicemail;
 using mozilla::dom::alarm::AlarmHalService;
 using mozilla::dom::indexedDB::IndexedDatabaseManager;
 using mozilla::dom::power::PowerManagerService;
@@ -330,6 +335,12 @@ NS_GENERIC_FACTORY_SINGLETON_CONSTRUCTOR(nsIAlarmHalService,
                                          AlarmHalService::GetInstance)
 NS_GENERIC_FACTORY_SINGLETON_CONSTRUCTOR(nsITimeService,
                                          TimeService::GetInstance)
+NS_GENERIC_FACTORY_SINGLETON_CONSTRUCTOR(nsIVoicemailProvider,
+                                         VoicemailServiceFactory::CreateVoicemailService)
+
+NS_GENERIC_FACTORY_SINGLETON_CONSTRUCTOR(nsIVoicemailStatusService,
+                                         VoicemailStatusService::GetInstance)
+
 #ifdef MOZ_GAMEPAD
 using mozilla::dom::GamepadServiceTest;
 NS_GENERIC_FACTORY_SINGLETON_CONSTRUCTOR(GamepadServiceTest,
@@ -836,6 +847,8 @@ NS_DEFINE_NAMED_CID(OSFILECONSTANTSSERVICE_CID);
 NS_DEFINE_NAMED_CID(NS_ALARMHALSERVICE_CID);
 NS_DEFINE_NAMED_CID(TCPSOCKETCHILD_CID);
 NS_DEFINE_NAMED_CID(NS_TIMESERVICE_CID);
+NS_DEFINE_NAMED_CID(VOICEMAIL_SERVICE_CID);
+NS_DEFINE_NAMED_CID(VOICEMAIL_STATUS_SERVICE_CID);
 #ifdef MOZ_WIDGET_GONK
 NS_DEFINE_NAMED_CID(GONK_GPS_GEOLOCATION_PROVIDER_CID);
 #endif
@@ -1122,6 +1135,8 @@ static const mozilla::Module::CIDEntry kLayoutCIDs[] = {
   { &kNS_ALARMHALSERVICE_CID, false, NULL, nsIAlarmHalServiceConstructor },
   { &kTCPSOCKETCHILD_CID, false, NULL, TCPSocketChildConstructor },
   { &kNS_TIMESERVICE_CID, false, NULL, nsITimeServiceConstructor },
+  { &kVOICEMAIL_SERVICE_CID, false, NULL, nsIVoicemailProviderConstructor},
+  { &kVOICEMAIL_STATUS_SERVICE_CID, false, NULL, nsIVoicemailStatusServiceConstructor },
 #ifdef MOZ_WIDGET_GONK
   { &kGONK_GPS_GEOLOCATION_PROVIDER_CID, false, NULL, nsIGeolocationProviderConstructor },
 #endif
@@ -1271,6 +1286,8 @@ static const mozilla::Module::ContractIDEntry kLayoutContracts[] = {
   { ALARMHALSERVICE_CONTRACTID, &kNS_ALARMHALSERVICE_CID },
   { "@mozilla.org/tcp-socket-child;1", &kTCPSOCKETCHILD_CID },
   { TIMESERVICE_CONTRACTID, &kNS_TIMESERVICE_CID },
+  { VOICEMAIL_SERVICE_CONTRACTID, &kVOICEMAIL_SERVICE_CID },
+  { VOICEMAIL_STATUS_SERVICE_CONTRACTID, &kVOICEMAIL_STATUS_SERVICE_CID },
 #ifdef MOZ_WIDGET_GONK
   { GONK_GPS_GEOLOCATION_PROVIDER_CONTRACTID, &kGONK_GPS_GEOLOCATION_PROVIDER_CID },
 #endif

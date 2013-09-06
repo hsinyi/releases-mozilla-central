@@ -5,7 +5,11 @@
 DEPTH            = @DEPTH@
 topsrcdir        = @top_srcdir@
 srcdir           = @srcdir@
-VPATH            = @srcdir@
+VPATH            = \
+  $(srcdir) \
+  $(srcdir)/ipc \
+  $(srcdir)/ril \
+  $(NULL)
 
 include $(DEPTH)/config/autoconf.mk
 
@@ -16,9 +20,42 @@ FAIL_ON_WARNINGS := 1
 
 include $(topsrcdir)/dom/dom-config.mk
 
+EXPORTS_NAMESPACES = \
+  mozilla/dom \
+  mozilla/dom/voicemail \
+  $(NULL)
+
+EXPORTS_mozilla/dom = \
+  Voicemail.h \
+  $(NULL)
+
+EXPORTS_mozilla/dom/voicemail = \
+  VoicemailChild.h \
+  VoicemailParent.h \
+  VoicemailService.h \
+  VoicemailServiceFactory.h \
+  VoicemailStatus.h \
+  VoicemailStatusService.h \
+  VoicemailIPCSerialiser.h \
+  $(NULL)
+
 CPPSRCS = \
   Voicemail.cpp \
   $(NULL)
 
+LOCAL_INCLUDES += $(VPATH:%=-I%)
+
+CPPSRCS += \
+  VoicemailServiceFactory.cpp \
+  VoicemailService.cpp \
+  VoicemailChild.cpp \
+  VoicemailParent.cpp \
+  VoicemailIPCService.cpp \
+  VoicemailStatus.cpp \
+  VoicemailStatusService.cpp \
+  $(NULL)
+
+include $(topsrcdir)/config/config.mk
+include $(topsrcdir)/ipc/chromium/chromium-config.mk
 include $(topsrcdir)/config/rules.mk
 

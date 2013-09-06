@@ -10,6 +10,7 @@ XPIDL_SOURCES += [
     'nsIDOMMozVoicemailStatus.idl',
     'nsINavigatorVoicemail.idl',
     'nsIVoicemailProvider.idl',
+    'nsIVoicemailStatusService.idl',
 ]
 
 XPIDL_MODULE = 'dom_voicemail'
@@ -26,3 +27,9 @@ EXPORTS.mozilla.dom += [
     'Voicemail.h',
 ]
 
+EXPORTS.mozilla.dom.voicemail += [
+    'VoicemailServiceFactory.h',
+    'VoicemailParent.h',
+    'VoicemailChild.h',
+    'VoicemailStatusService.h',
+] 

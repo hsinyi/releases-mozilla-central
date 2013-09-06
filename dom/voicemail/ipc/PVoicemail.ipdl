@@ -1,0 +1,39 @@
+/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* vim: set sw=2 ts=8 et ft=cpp : */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+include protocol PContent;
+include VoicemailTypes;
+
+//include "mozilla/dom/voicemail/VoicemailIPCSerialiser.h";
+
+//using nsVoicemailStatus;
+
+namespace mozilla {
+namespace dom {
+namespace voicemail {
+
+sync protocol PVoicemail {
+    manager PContent;
+
+child:
+  //NotifyStatusChanged(nsVoicemailStatus aStatus);
+  NotifyStatusChanged(VoicemailStatusData aStatusData);
+parent:
+  /**
+   * Sent when the child no longer needs to use voicemail.
+   */
+  __delete__();
+
+  sync GetNumber()
+       returns (nsString aNumber);
+  sync GetDisplayName()
+       returns (nsString aDisplayName); 
+
+};
+
+} // namespace voicemail
+} // namespace dom
+} // namespace mozilla

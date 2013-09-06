@@ -14,12 +14,14 @@
 #include "nsServiceManagerUtils.h"
 #include "GeneratedEvents.h"
 
-#define NS_RILCONTENTHELPER_CONTRACTID "@mozilla.org/ril/content-helper;1"
+#include <android/log.h>
+#define LOG(args...)  __android_log_print(ANDROID_LOG_INFO, "Voicemail", args);
 
 using namespace mozilla::dom;
 
 class Voicemail::Listener : public nsIVoicemailListener
 {
+private:
   Voicemail* mVoicemail;
 
 public:
@@ -58,17 +60,18 @@ Voicemail::Voicemail(nsPIDOMWindow* aWindow,
   BindToOwner(aWindow);
 
   mListener = new Listener(this);
-  DebugOnly<nsresult> rv = mProvider->RegisterVoicemailMsg(mListener);
+
+  DebugOnly<nsresult> rv = mProvider->Register(mListener);
   NS_WARN_IF_FALSE(NS_SUCCEEDED(rv),
                    "Failed registering voicemail messages with provider");
 }
 
 Voicemail::~Voicemail()
 {
-  MOZ_ASSERT(mProvider && mListener);
+  MOZ_ASSERT(mProvider);
 
   mListener->Disconnect();
-  mProvider->UnregisterVoicemailMsg(mListener);
+  mProvider->Unregister(mListener);
 }
 
 // nsIDOMMozVoicemail
@@ -76,19 +79,22 @@ Voicemail::~Voicemail()
 NS_IMETHODIMP
 Voicemail::GetStatus(nsIDOMMozVoicemailStatus** aStatus)
 {
-  *aStatus = nullptr;
+ /* *aStatus = nullptr;
 
   NS_ENSURE_STATE(mProvider);
   return mProvider->GetVoicemailStatus(aStatus);
+  */
+  return NS_OK;
 }
 
 NS_IMETHODIMP
 Voicemail::GetNumber(nsAString& aNumber)
 {
+
   NS_ENSURE_STATE(mProvider);
   aNumber.SetIsVoid(true);
 
-  return mProvider->GetVoicemailNumber(aNumber);
+  return mProvider->GetNumber(aNumber);
 }
 
 NS_IMETHODIMP
@@ -97,7 +103,7 @@ Voicemail::GetDisplayName(nsAString& aDisplayName)
   NS_ENSURE_STATE(mProvider);
   aDisplayName.SetIsVoid(true);
 
-  return mProvider->GetVoicemailDisplayName(aDisplayName);
+  return mProvider->GetDisplayName(aDisplayName);
 }
 
 NS_IMPL_EVENT_HANDLER(Voicemail, statuschanged)
@@ -107,6 +113,7 @@ NS_IMPL_EVENT_HANDLER(Voicemail, statuschanged)
 NS_IMETHODIMP
 Voicemail::NotifyStatusChanged(nsIDOMMozVoicemailStatus* aStatus)
 {
+
   nsCOMPtr<nsIDOMEvent> event;
   NS_NewDOMMozVoicemailEvent(getter_AddRefs(event), this, nullptr, nullptr);
 
@@ -116,6 +123,20 @@ Voicemail::NotifyStatusChanged(nsIDOMMozVoicemailStatus* aStatus)
   NS_ENSURE_SUCCESS(rv, rv);
 
   return DispatchTrustedEvent(ce);
+
+/*
+  LOG("XXX NotifyStatusChanged");
+  nsCOMPtr<nsIDOMEvent> event;
+  nsresult rv =
+    NS_NewDOMEvent(getter_AddRefs(event), this, nullptr, nullptr);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  rv = event->InitEvent(NS_LITERAL_STRING("statuschanged"), false, false);
+  event->SetTrusted(true);
+
+  DispatchDOMEvent(nullptr, event, nullptr, nullptr);
+  return NS_OK;
+*/
 }
 
 nsresult
@@ -126,7 +147,7 @@ NS_NewVoicemail(nsPIDOMWindow* aWindow, nsIDOMMozVoicemail** aVoicemail)
     aWindow->GetCurrentInnerWindow();
 
   nsCOMPtr<nsIVoicemailProvider> provider =
-    do_GetService(NS_RILCONTENTHELPER_CONTRACTID);
+    do_GetService(VOICEMAIL_SERVICE_CONTRACTID);
   NS_ENSURE_STATE(provider);
 
   nsRefPtr<mozilla::dom::Voicemail> voicemail =

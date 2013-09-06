@@ -20,6 +20,7 @@ include protocol PSms;
 include protocol PSpeechSynthesis;
 include protocol PStorage;
 include protocol PTestShell;
+include protocol PVoicemail;
 include DOMTypes;
 include InputStreamParams;
 include URIParams;
@@ -248,6 +249,7 @@ rpc protocol PContent
     manages PSpeechSynthesis;
     manages PStorage;
     manages PTestShell;
+    manages PVoicemail;
 
 both:
     // Depending on exactly how the new browser is being created, it might be
@@ -392,6 +394,8 @@ parent:
     PStorage();
 
     PBluetooth();
+
+    PVoicemail();
 
     // Services remoting
 

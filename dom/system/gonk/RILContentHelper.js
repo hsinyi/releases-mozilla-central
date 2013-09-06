@@ -43,8 +43,6 @@ const MOBILENETWORKINFO_CID =
   Components.ID("{a6c8416c-09b4-46d1-bf29-6520d677d085}");
 const MOBILECELLINFO_CID =
   Components.ID("{5e809018-68c0-4c54-af0b-2a9b8f748c45}");
-const VOICEMAILSTATUS_CID=
-  Components.ID("{5467f2eb-e214-43ea-9b89-67711241ec8e}");
 const MOBILECFINFO_CID=
   Components.ID("{a4756f16-e728-4d9f-8baa-8464f894888a}");
 const CELLBROADCASTMESSAGE_CID =
@@ -63,8 +61,6 @@ const RIL_IPC_MSG_NAMES = [
   "RIL:SelectNetwork",
   "RIL:SelectNetworkAuto",
   "RIL:CallStateChanged",
-  "RIL:VoicemailNotification",
-  "RIL:VoicemailInfoChanged",
   "RIL:CallError",
   "RIL:CardLockResult",
   "RIL:USSDReceived",
@@ -127,12 +123,6 @@ MobileICCInfo.prototype = {
   mnc: null,
   spn: null,
   msisdn: null
-};
-
-function VoicemailInfo() {}
-VoicemailInfo.prototype = {
-  number: null,
-  displayName: null
 };
 
 function MobileConnectionInfo() {}
@@ -201,25 +191,6 @@ MobileCellInfo.prototype = {
 
   gsmLocationAreaCode: null,
   gsmCellId: null
-};
-
-function VoicemailStatus() {}
-VoicemailStatus.prototype = {
-  QueryInterface: XPCOMUtils.generateQI([Ci.nsIDOMMozVoicemailStatus]),
-  classID:        VOICEMAILSTATUS_CID,
-  classInfo:      XPCOMUtils.generateCI({
-    classID:          VOICEMAILSTATUS_CID,
-    classDescription: "VoicemailStatus",
-    flags:            Ci.nsIClassInfo.DOM_OBJECT,
-    interfaces:       [Ci.nsIDOMMozVoicemailStatus]
-  }),
-
-  // nsIDOMMozVoicemailStatus
-
-  hasMessages: false,
-  messageCount: Ci.nsIDOMMozVoicemailStatus.MESSAGE_COUNT_UNKNOWN,
-  returnNumber: null,
-  returnMessage: null
 };
 
 function MobileCFInfo() {}
@@ -317,7 +288,6 @@ function RILContentHelper() {
     voiceConnectionInfo:  new MobileConnectionInfo(),
     dataConnectionInfo:   new MobileConnectionInfo()
   };
-  this.voicemailInfo = new VoicemailInfo();
 
   this.initRequests();
   this.initMessageListener(RIL_IPC_MSG_NAMES);
@@ -329,7 +299,6 @@ RILContentHelper.prototype = {
 
   QueryInterface: XPCOMUtils.generateQI([Ci.nsIMobileConnectionProvider,
                                          Ci.nsICellBroadcastProvider,
-                                         Ci.nsIVoicemailProvider,
                                          Ci.nsITelephonyProvider,
                                          Ci.nsIIccProvider,
                                          Ci.nsIObserver]),
@@ -338,7 +307,6 @@ RILContentHelper.prototype = {
                                     classDescription: "RILContentHelper",
                                     interfaces: [Ci.nsIMobileConnectionProvider,
                                                  Ci.nsICellBroadcastProvider,
-                                                 Ci.nsIVoicemailProvider,
                                                  Ci.nsITelephonyProvider,
                                                  Ci.nsIIccProvider]}),
 
@@ -772,31 +740,8 @@ RILContentHelper.prototype = {
   _mobileConnectionListeners: null,
   _telephonyListeners: null,
   _cellBroadcastListeners: null,
-  _voicemailListeners: null,
   _iccListeners: null,
   _enumerateTelephonyCallbacks: null,
-
-  voicemailStatus: null,
-
-  getVoicemailInfo: function getVoicemailInfo() {
-    // Get voicemail infomation by IPC only on first time.
-    this.getVoicemailInfo = function getVoicemailInfo() {
-      return this.voicemailInfo;
-    };
-
-    let voicemailInfo = cpmm.sendSyncMessage("RIL:GetVoicemailInfo")[0];
-    if (voicemailInfo) {
-      this.updateInfo(voicemailInfo, this.voicemailInfo);
-    }
-
-    return this.voicemailInfo;
-  },
-  get voicemailNumber() {
-    return this.getVoicemailInfo().number;
-  },
-  get voicemailDisplayName() {
-    return this.getVoicemailInfo().displayName;
-  },
 
   registerListener: function registerListener(listenerType, listener) {
     let listeners = this[listenerType];
@@ -851,16 +796,6 @@ RILContentHelper.prototype = {
       this._enumerateTelephonyCallbacks.splice(index, 1);
       if (DEBUG) debug("Unregistered enumerateTelephony callback: " + listener);
     }
-  },
-
-  registerVoicemailMsg: function registerVoicemailMsg(listener) {
-    debug("Registering for voicemail-related messages");
-    this.registerListener("_voicemailListeners", listener);
-    cpmm.sendAsyncMessage("RIL:RegisterVoicemailMsg");
-  },
-
-  unregisterVoicemailMsg: function unregisteVoicemailMsg(listener) {
-    this.unregisterListener("_voicemailListeners", listener);
   },
 
   registerCellBroadcastMsg: function registerCellBroadcastMsg(listener) {
@@ -1069,12 +1004,6 @@ RILContentHelper.prototype = {
                            "notifyError",
                            [msg.json.callIndex, msg.json.errorMsg]);
         break;
-      case "RIL:VoicemailNotification":
-        this.handleVoicemailNotification(msg.json);
-        break;
-      case "RIL:VoicemailInfoChanged":
-        this.updateInfo(msg.json, this.voicemailInfo);
-        break;
       case "RIL:CardLockResult":
         if (msg.json.success) {
           let result = new MobileICCCardLockResult(msg.json);
@@ -1248,39 +1177,6 @@ RILContentHelper.prototype = {
       this.fireRequestError(message.requestId, message.errorMsg);
     } else {
       this.fireRequestSuccess(message.requestId, null);
-    }
-  },
-
-  handleVoicemailNotification: function handleVoicemailNotification(message) {
-    let changed = false;
-    if (!this.voicemailStatus) {
-      this.voicemailStatus = new VoicemailStatus();
-    }
-
-    if (this.voicemailStatus.hasMessages != message.active) {
-      changed = true;
-      this.voicemailStatus.hasMessages = message.active;
-    }
-
-    if (this.voicemailStatus.messageCount != message.msgCount) {
-      changed = true;
-      this.voicemailStatus.messageCount = message.msgCount;
-    }
-
-    if (this.voicemailStatus.returnNumber != message.returnNumber) {
-      changed = true;
-      this.voicemailStatus.returnNumber = message.returnNumber;
-    }
-
-    if (this.voicemailStatus.returnMessage != message.returnMessage) {
-      changed = true;
-      this.voicemailStatus.returnMessage = message.returnMessage;
-    }
-
-    if (changed) {
-      this._deliverEvent("_voicemailListeners",
-                         "voicemailNotification",
-                         [this.voicemailStatus]);
     }
   },
 

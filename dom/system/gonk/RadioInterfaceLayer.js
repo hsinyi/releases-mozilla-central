@@ -39,6 +39,8 @@ const RADIOINTERFACELAYER_CID =
   Components.ID("{2d831c8d-6017-435b-a80c-e5d422810cea}");
 const RILNETWORKINTERFACE_CID =
   Components.ID("{3bdd52a9-3965-4130-b569-0ac5afed045e}");
+const VOICEMAILSTATUS_CID=
+  Components.ID("{5467f2eb-e214-43ea-9b89-67711241ec8e}");
 
 const nsIAudioManager = Ci.nsIAudioManager;
 const nsITelephonyProvider = Ci.nsITelephonyProvider;
@@ -108,11 +110,6 @@ const RIL_IPC_MOBILECONNECTION_MSG_NAMES = [
   "RIL:GetCallWaitingOption"
 ];
 
-const RIL_IPC_VOICEMAIL_MSG_NAMES = [
-  "RIL:RegisterVoicemailMsg",
-  "RIL:GetVoicemailInfo"
-];
-
 const RIL_IPC_CELLBROADCAST_MSG_NAMES = [
   "RIL:RegisterCellBroadcastMsg"
 ];
@@ -152,6 +149,10 @@ XPCOMUtils.defineLazyServiceGetter(this, "gTimeService",
 XPCOMUtils.defineLazyServiceGetter(this, "gSystemWorkerManager",
                                    "@mozilla.org/telephony/system-worker-manager;1",
                                    "nsISystemWorkerManager");
+
+XPCOMUtils.defineLazyServiceGetter(this, "gVoicemailStatusService",
+                                   "@mozilla.org/voicemail/voicemailstatusservice;1",
+                                   "nsIVoicemailStatusService");
 
 XPCOMUtils.defineLazyGetter(this, "WAP", function () {
   let WAP = {};
@@ -214,6 +215,24 @@ XPCOMUtils.defineLazyGetter(this, "gAudioManager", function getAudioManager() {
   }
 });
 
+function VoicemailStatus() {}
+VoicemailStatus.prototype = {
+  QueryInterface: XPCOMUtils.generateQI([Ci.nsIDOMMozVoicemailStatus]),
+  classID:        VOICEMAILSTATUS_CID,
+  classInfo:      XPCOMUtils.generateCI({
+    classID:          VOICEMAILSTATUS_CID,
+    classDescription: "VoicemailStatus",
+    flags:            Ci.nsIClassInfo.DOM_OBJECT,
+    interfaces:       [Ci.nsIDOMMozVoicemailStatus]
+  }),
+
+  // nsIDOMMozVoicemailStatus
+
+  hasMessages: false,
+  messageCount: Ci.nsIDOMMozVoicemailStatus.MESSAGE_COUNT_UNKNOWN,
+  returnNumber: null,
+  returnMessage: null
+};
 
 function RadioInterfaceLayer() {
   this.dataNetworkInterface = new RILNetworkInterface(this, Ci.nsINetworkInterface.NETWORK_TYPE_MOBILE);
@@ -329,9 +348,6 @@ function RadioInterfaceLayer() {
   for (let msgname of RIL_IPC_MOBILECONNECTION_MSG_NAMES) {
     ppmm.addMessageListener(msgname, this);
   }
-  for (let msgname of RIL_IPC_VOICEMAIL_MSG_NAMES) {
-    ppmm.addMessageListener(msgname, this);
-  }
   for (let msgname of RIL_IPC_CELLBROADCAST_MSG_NAMES) {
     ppmm.addMessageListener(msgname, this);
   }
@@ -387,12 +403,6 @@ RadioInterfaceLayer.prototype = {
       if (!msg.target.assertPermission("mobileconnection")) {
         debug("MobileConnection message " + msg.name +
               " from a content process with no 'mobileconnection' privileges.");
-        return null;
-      }
-    } else if (RIL_IPC_VOICEMAIL_MSG_NAMES.indexOf(msg.name) != -1) {
-      if (!msg.target.assertPermission("voicemail")) {
-        debug("Voicemail message " + msg.name +
-              " from a content process with no 'voicemail' privileges.");
         return null;
       }
     } else if (RIL_IPC_CELLBROADCAST_MSG_NAMES.indexOf(msg.name) != -1) {
@@ -522,9 +532,6 @@ RadioInterfaceLayer.prototype = {
       case "RIL:RegisterIccMsg":
         this.registerMessageTarget("icc", msg.target);
         break;
-      case "RIL:RegisterVoicemailMsg":
-        this.registerMessageTarget("voicemail", msg.target);
-        break;
       case "RIL:SetCallForwardingOption":
         this.saveRequestTarget(msg);
         this.setCallForwardingOption(msg.json);
@@ -544,9 +551,6 @@ RadioInterfaceLayer.prototype = {
       case "RIL:RegisterCellBroadcastMsg":
         this.registerMessageTarget("cellbroadcast", msg.target);
         break;
-      case "RIL:GetVoicemailInfo":
-        // This message is sync.
-        return this.voicemailInfo;
     }
   },
 
@@ -737,6 +741,56 @@ RadioInterfaceLayer.prototype = {
     }
   },
 
+  // test voicemail ipdl
+  voicemailListeners: null,
+  registerVoicemailListener: function registerVoicemailListener(listener) {
+    debug("XXX registerVoicemailListener - " + JSON.stringify(listener));
+    if (!this.voicemailListeners) {
+      this.voicemailListeners = [];
+    }
+    if (this.voicemailListeners.indexOf(listener) == -1) {
+      this.voicemailListeners.push(listener);
+      debug("XXX voicemailListener.length: " + this.voicemailListeners.length);
+    }
+  },
+
+  unregisterVoicemailListener: function unregisterVoicemailListener(listener) {
+    debug("XXX unregisterVoicemailListener - " + JSON.stringify(listener));
+    if (this.voicemailListeners) {
+      let index = this.voicemailListeners.indexOf(listener);
+      if (index != -1) {
+        this.voicemailListeners.splice(index, 1);
+      }
+    }
+  },
+
+  notifyVoicemailStatusChanged: function notifyVoicemailStatusChanged() {
+    debug("XXX notifyStatusChanged");
+    this.voicemailStatus = gVoicemailStatusService.createStatus(true, 1,
+                                                                "112233",
+                                                                "testtest");
+    //new VoicemailStatus();
+    //this.voicemailStatus.hasMessages = true;
+    //this.voicemailStatus.messageCount = 1;
+    //this.voicemailStatus.returnNumber = "112233";
+    //this.voicemailStatus.returnMessage = "testtesttest";
+    debug("XXX notifyStatusChanged: " + JSON.stringify(this.voicemailStatus));
+    for each (let item in this.voicemailListeners) {
+      
+      item.notifyStatusChanged(this.voicemailStatus);
+    }
+  },
+
+  get voicemailNumber() {
+    debug("XXX voicemailNumber: " + this.voicemailInfo.number + " name: " + this.voicemailInfo.displayName);
+    return this.voicemailInfo.number;
+  },
+
+  get voicemailDisplayName() {
+    debug("XXX voicemailDisplayName: " + this.voicemailInfo.displayName);
+    return this.voicemailInfo.displayName;
+  },
+
   _messageManagerByRequest: null,
   saveRequestTarget: function saveRequestTarget(msg) {
     let requestId = msg.json.requestId;
@@ -825,10 +879,6 @@ RadioInterfaceLayer.prototype = {
 
   _sendMobileConnectionMessage: function sendMobileConnectionMessage(message, options) {
     this._sendTargetMessage("mobileconnection", message, options);
-  },
-
-  _sendVoicemailMessage: function sendVoicemailMessage(message, options) {
-    this._sendTargetMessage("voicemail", message, options);
   },
 
   _sendCellBroadcastMessage: function sendCellBroadcastMessage(message, options) {
@@ -1361,6 +1411,8 @@ RadioInterfaceLayer.prototype = {
     gSystemMessenger.broadcastMessage("telephony-call-ended", data);
     this.updateCallAudioState(call);
     this._sendTelephonyMessage("RIL:CallStateChanged", call);
+    // Test voicemail
+    this.notifyVoicemailStatusChanged();
   },
 
   /**
@@ -1537,10 +1589,34 @@ RadioInterfaceLayer.prototype = {
     // See TS 23.040 9.2.3.24.2
 
     let mwi = message.mwi;
+    let changed = false;
     if (mwi) {
       mwi.returnNumber = message.sender;
       mwi.returnMessage = message.fullBody;
-      this._sendVoicemailMessage("RIL:VoicemailNotification", mwi);
+      // TODO
+      //this._sendVoicemailMessage("RIL:VoicemailNotification", mwi);
+      if (!this.voicemailStatus) {
+        this.voicemailStatus = new VoicemailStatus();
+      }
+      if (this.voicemailStatus.hasMessages != mwi.active) {
+        changed = true;
+        this.voicemailStatus.hasMessages = mwi.active;
+      }
+      if (this.voicemailStatus.messageCount != mwi.msgCount) {
+        changed = true;
+        this.voicemailStatus.messageCount = mwi.msgCount;
+      }
+      if (this.voicemailStatus.returnNumber != mwi.returnNumber) {
+        changed = true;
+        this.voicemailStatus.returnNumber = mwi.returnNumber;
+      }
+      if (this.voicemailStatus.returnMessage != mwi.returnMessage) {
+        changed = true;
+        this.voicemailStatus.returnMessage = mwi.returnMessage;
+      }
+      if (changed) {
+        this.notifyVoicemailStatusChanged();
+      }
       return true;
     }
 
@@ -1765,8 +1841,6 @@ RadioInterfaceLayer.prototype = {
 
     voicemailInfo.number = message.number;
     voicemailInfo.displayName = message.alphaId;
-
-    this._sendVoicemailMessage("RIL:VoicemailInfoChanged", voicemailInfo);
   },
 
   handleIccInfoChange: function handleIccInfoChange(message) {
@@ -1884,9 +1958,6 @@ RadioInterfaceLayer.prototype = {
           ppmm.removeMessageListener(msgname, this);
         }
         for (let msgname of RIL_IPC_MOBILECONNECTION_MSG_NAMES) {
-          ppmm.removeMessageListener(msgname, this);
-        }
-        for (let msgname of RIL_IPC_VOICEMAIL_MSG_NAMES) {
           ppmm.removeMessageListener(msgname, this);
         }
         for (let msgname of RIL_IPC_CELLBROADCAST_MSG_NAMES) {

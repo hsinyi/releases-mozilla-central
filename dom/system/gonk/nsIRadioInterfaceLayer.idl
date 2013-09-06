@@ -8,6 +8,7 @@ interface nsIDOMMozMobileConnectionInfo;
 interface nsIDOMMozMobileICCInfo;
 interface nsIMobileMessageCallback;
 interface nsIDOMMozSmsSegmentInfo;
+interface nsIVoicemailListener;
 
 [scriptable, uuid(1e602d20-d066-4399-8997-daf36b3158ef)]
 interface nsIRILDataCallInfo : nsISupports
@@ -95,7 +96,7 @@ interface nsIRilContext : nsISupports
   readonly attribute nsIDOMMozMobileConnectionInfo data;
 };
 
-[scriptable, uuid(9a914550-8f7a-11e2-9e96-0800200c9a66)]
+[scriptable, uuid(be816685-1507-45b1-b413-6ce2f3c3dd78)]
 interface nsIRadioInterfaceLayer : nsISupports
 {
   /**
@@ -151,4 +152,10 @@ interface nsIRadioInterfaceLayer : nsISupports
    */
   void getICCContacts(in DOMString contactType,
                       in nsIRILContactCallback callback);
+
+  // Voicemail ipdl test
+  void registerVoicemailListener(in nsIVoicemailListener listener);
+  void unregisterVoicemailListener(in nsIVoicemailListener listener);
+  readonly attribute DOMString voicemailNumber;
+  readonly attribute DOMString voicemailDisplayName; 
 };

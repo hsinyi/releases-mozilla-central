@@ -143,7 +143,11 @@ public:
     virtual bool DeallocPSms(PSmsChild*);
 
     virtual PStorageChild* AllocPStorage();
+ //   virtual PStorageChild* AllocPStorage(const StorageConstructData& aData);
     virtual bool DeallocPStorage(PStorageChild* aActor);
+
+    virtual PVoicemailChild* AllocPVoicemail();
+    virtual bool DeallocPVoicemail(PVoicemailChild*);
 
     virtual PBluetoothChild* AllocPBluetooth();
     virtual bool DeallocPBluetooth(PBluetoothChild* aActor);

@@ -302,6 +302,7 @@ using mozilla::dom::workers::ResolveWorkerClasses;
 #include "Telephony.h"
 #include "TelephonyCall.h"
 #include "nsIDOMMozVoicemail.h"
+#include "nsIDOMMozVoicemailStatus.h"
 #include "nsIDOMIccManager.h"
 #include "StkCommandEvent.h"
 #include "nsIDOMMozCellBroadcast.h"
@@ -812,7 +813,8 @@ static nsDOMClassInfoData sClassInfoData[] = {
 
   NS_DEFINE_CLASSINFO_DATA(MozCellBroadcast, nsDOMGenericSH,
                            DOM_DEFAULT_SCRIPTABLE_FLAGS)
-#endif
+
+  #endif
 
   NS_DEFINE_CLASSINFO_DATA(CSSFontFaceRule, nsDOMGenericSH,
                            DOM_DEFAULT_SCRIPTABLE_FLAGS)
@@ -892,6 +894,8 @@ static nsDOMClassInfoData sClassInfoData[] = {
                            EVENTTARGET_SCRIPTABLE_FLAGS)
   NS_DEFINE_CLASSINFO_DATA(MozVoicemail, nsEventTargetSH,
                            EVENTTARGET_SCRIPTABLE_FLAGS)
+  NS_DEFINE_CLASSINFO_DATA(MozVoicemailStatus, nsDOMGenericSH,
+                           DOM_DEFAULT_SCRIPTABLE_FLAGS)
   NS_DEFINE_CLASSINFO_DATA(MozIccManager, nsDOMGenericSH,
                            DOM_DEFAULT_SCRIPTABLE_FLAGS)
   NS_DEFINE_CLASSINFO_DATA(MozStkCommandEvent, nsEventSH,
@@ -2115,6 +2119,7 @@ nsDOMClassInfo::Init()
      DOM_CLASSINFO_MAP_ENTRY(nsIDOMMozCellBroadcastEvent)
      DOM_CLASSINFO_EVENT_MAP_ENTRIES
   DOM_CLASSINFO_MAP_END
+
 #endif // MOZ_B2G_RIL
 
   DOM_CLASSINFO_MAP_BEGIN(CSSFontFaceRule, nsIDOMCSSFontFaceRule)
@@ -2284,6 +2289,10 @@ nsDOMClassInfo::Init()
   DOM_CLASSINFO_MAP_BEGIN(MozVoicemail, nsIDOMMozVoicemail)
     DOM_CLASSINFO_MAP_ENTRY(nsIDOMMozVoicemail)
     DOM_CLASSINFO_MAP_ENTRY(nsIDOMEventTarget)
+  DOM_CLASSINFO_MAP_END
+
+  DOM_CLASSINFO_MAP_BEGIN(MozVoicemailStatus, nsIDOMMozVoicemailStatus)
+     DOM_CLASSINFO_MAP_ENTRY(nsIDOMMozVoicemailStatus)
   DOM_CLASSINFO_MAP_END
 
   DOM_CLASSINFO_MAP_BEGIN(MozIccManager, nsIDOMMozIccManager)

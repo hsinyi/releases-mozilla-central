@@ -34,6 +34,7 @@
 #include "mozilla/dom/devicestorage/DeviceStorageRequestParent.h"
 #include "SmsParent.h"
 #include "mozilla/Hal.h"
+#include "VoicemailParent.h"
 #include "mozilla/hal_sandbox/PHalParent.h"
 #include "mozilla/ipc/TestShellParent.h"
 #include "mozilla/layers/CompositorParent.h"
@@ -122,6 +123,9 @@ using namespace mozilla::system;
 #include "mozilla/dom/SpeechSynthesisParent.h"
 #endif
 
+#include "android/log.h"
+#define LOG(args...)  __android_log_print(ANDROID_LOG_INFO,"ContentParent", args);
+ 
 static NS_DEFINE_CID(kCClipboardCID, NS_CLIPBOARD_CID);
 static const char* sClipboardTextFlavors[] = { kUnicodeMime };
 
@@ -137,6 +141,7 @@ using namespace mozilla::idl;
 using namespace mozilla::ipc;
 using namespace mozilla::layers;
 using namespace mozilla::net;
+using namespace mozilla::dom::voicemail;
 
 namespace mozilla {
 namespace dom {
@@ -1944,6 +1949,36 @@ ContentParent::DeallocPSms(PSmsParent* aSms)
 {
     static_cast<SmsParent*>(aSms)->Release();
     return true;
+}
+
+PVoicemailParent*
+ContentParent::AllocPVoicemail()
+{
+    if (!AssertAppProcessPermission(this, "voicemail")) {
+        LOG("XXX no voicemail permission");
+        return nullptr;
+    }
+
+    VoicemailParent* parent = new VoicemailParent();
+    LOG("XXX new voicemailparent");
+    parent->AddRef();
+    LOG("XXX voicemailParent: %p\n", parent);
+    return parent; 
+}
+
+bool
+ContentParent::DeallocPVoicemail(PVoicemailParent* aActor)
+{
+    static_cast<VoicemailParent*>(aActor)->Release(); 
+    return true;
+}
+
+bool
+ContentParent::RecvPVoicemailConstructor(PVoicemailParent* aActor)
+{
+    LOG("XXX RecvPVoicemailConstructor");
+    return static_cast<VoicemailParent*>(aActor)->RegisterListener();
+
 }
 
 PStorageParent*

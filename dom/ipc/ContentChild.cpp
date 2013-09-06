@@ -93,6 +93,7 @@
 #include "mozilla/dom/devicestorage/DeviceStorageRequestChild.h"
 #include "mozilla/dom/bluetooth/PBluetoothChild.h"
 #include "mozilla/ipc/InputStreamUtils.h"
+#include "mozilla/dom/voicemail/VoicemailChild.h"
 
 #ifdef MOZ_WEBSPEECH
 #include "mozilla/dom/PSpeechSynthesisChild.h"
@@ -122,6 +123,7 @@ using namespace mozilla::hal_sandbox;
 using namespace mozilla::ipc;
 using namespace mozilla::layers;
 using namespace mozilla::net;
+using namespace mozilla::dom::voicemail;
 #if defined(MOZ_WIDGET_GONK)
 using namespace mozilla::system;
 #endif
@@ -823,6 +825,21 @@ bool
 ContentChild::DeallocPSms(PSmsChild* aSms)
 {
     delete aSms;
+    return true;
+}
+
+PVoicemailChild*
+ContentChild::AllocPVoicemail()
+{
+
+    NS_NOTREACHED("We should never be manually allocating PVoicemailChild actors");
+    return nullptr; 
+}
+
+bool
+ContentChild::DeallocPVoicemail(PVoicemailChild* aVoicemail)
+{
+    delete aVoicemail;
     return true;
 }
 

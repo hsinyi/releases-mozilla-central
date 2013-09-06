@@ -4,13 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef mozilla_dom_voicemail_voicemail_h__
-#define mozilla_dom_voicemail_voicemail_h__
+#ifndef mozilla_dom_voicemail_Voicemail_h__
+#define mozilla_dom_voicemail_Voicemail_h__
 
 #include "nsDOMEvent.h"
 #include "nsDOMEventTargetHelper.h"
 #include "nsIDOMMozVoicemail.h"
 #include "nsIVoicemailProvider.h"
+#include "mozilla/Attributes.h"
 
 class nsPIDOMWindow;
 class nsIDOMMozVoicemailStatus;
@@ -21,15 +22,7 @@ namespace dom {
 class Voicemail : public nsDOMEventTargetHelper,
                   public nsIDOMMozVoicemail
 {
-  /**
-   * Class Voicemail doesn't actually inherit nsIVoicemailListener. Instead, it
-   * owns an nsIVoicemailListener derived instance mListener and passes it to
-   * nsIVoicemailProvider. The onreceived events are first delivered to
-   * mListener and then forwarded to its owner, Voicemail. See also bug 775997
-   * comment #51.
-   */
   class Listener;
-
 public:
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_NSIDOMMOZVOICEMAIL
